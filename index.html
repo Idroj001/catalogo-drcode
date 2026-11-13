@@ -4,38 +4,83 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dr.Code - Cotizador de Servicios</title>
+  <meta name="color-scheme" content="light dark">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('drcode_theme');
+        if (saved !== 'light' && saved !== 'dark') {
+          var legacy = localStorage.getItem('theme');
+          if (legacy === 'light' || legacy === 'dark') {
+            saved = legacy;
+            localStorage.setItem('drcode_theme', legacy);
+          }
+        }
+        var theme = (saved === 'light' || saved === 'dark')
+          ? saved
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 </head>
 <body>
   <canvas id="matrixCanvas"></canvas>
 
   <!-- Header -->
   <header>
-    <div class="logo">{Dr.Code}</div>
-    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">
-      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      <svg class="icon-sun" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="5"/>
-        <g stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round">
-          <line x1="12" y1="1" x2="12" y2="4"/>
-          <line x1="12" y1="20" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
-          <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="4" y2="12"/>
-          <line x1="20" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
-          <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
-        </g>
-      </svg>
-    </button>
-    <div class="cart-icon" id="cartIcon">
-      <svg viewBox="0 0 24 24">
-        <path d="M17,18C15.89,18 15,18.89 15,20A2,2 0 0,0 17,22A2,2 0 0,0 19,20C19,18.89 18.1,18 17,18M1,2H4.27L5.21,4H20A1,1 0 0,1 21,5C21,5.17 20.95,5.34 20.88,5.5L17.3,11.97C16.96,12.58 16.33,13 15.63,13H8.1L7.2,14.63L7.17,14.75A0.25,0.25 0 0,0 7.42,15H19V17H7C5.89,17 5,16.1 5,15C5,14.65 5.09,14.32 5.27,14.04L6.6,11.59L3,4H1V2M7,18C5.89,18 5,18.89 5,20A2,2 0 0,0 7,22A2,2 0 0,0 9,20C9,18.89 8.1,18 7,18M16,11L18.78,6H6.14L8.5,11H16Z" />
-      </svg>
-      <div class="cart-badge" id="cartBadge">0</div>
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="{Dr.Code} — Cotizador de servicios">
+        <span class="logo-braces">{</span><span class="logo-text">Dr</span><span class="logo-dot">.</span><span class="logo-text">Code</span><span class="logo-braces">}</span>
+      </a>
+
+      <nav id="nav-menu" aria-label="Navegación principal">
+        <ul class="nav-menu">
+          <li><a href="https://idroj001.github.io/web-drcode/index.html" class="nav-link">Inicio</a></li>
+          <li><a href="https://idroj001.github.io/web-drcode/servicios.html" class="nav-link">Servicios</a></li>
+          <li><a href="https://idroj001.github.io/web-drcode/skills.html" class="nav-link">Skills</a></li>
+          <li><a href="https://idroj001.github.io/DrCode-landing/" class="nav-link">Landing</a></li>
+          <li><a href="https://idroj001.github.io/web-drcode/contacto.html" class="nav-link">Contacto</a></li>
+          <li><a href="https://idroj001.github.io/web-drcode/calendario.html" class="nav-link nav-cta">Agendamiento</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <div class="header-controls">
+          <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">
+            <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"/>
+              <g stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round">
+                <line x1="12" y1="1" x2="12" y2="4"/>
+                <line x1="12" y1="20" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+                <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="4" y2="12"/>
+                <line x1="20" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+                <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+              </g>
+            </svg>
+          </button>
+          <div class="cart-icon" id="cartIcon">
+            <svg viewBox="0 0 24 24">
+              <path d="M17,18C15.89,18 15,18.89 15,20A2,2 0 0,0 17,22A2,2 0 0,0 19,20C19,18.89 18.1,18 17,18M1,2H4.27L5.21,4H20A1,1 0 0,1 21,5C21,5.17 20.95,5.34 20.88,5.5L17.3,11.97C16.96,12.58 16.33,13 15.63,13H8.1L7.2,14.63L7.17,14.75A0.25,0.25 0 0,0 7.42,15H19V17H7C5.89,17 5,16.1 5,15C5,14.65 5.09,14.32 5.27,14.04L6.6,11.59L3,4H1V2M7,18C5.89,18 5,18.89 5,20A2,2 0 0,0 7,22A2,2 0 0,0 9,20C9,18.89 8.1,18 7,18M16,11L18.78,6H6.14L8.5,11H16Z" />
+            </svg>
+            <div class="cart-badge" id="cartBadge">0</div>
+          </div>
+        </div>
+        <button class="hamburger" aria-label="Menú de navegación" aria-expanded="false" aria-controls="nav-menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 
