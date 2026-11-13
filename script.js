@@ -341,15 +341,45 @@ function updateCartDrawer() {
   });
 }
 
-// Theme toggle (claro/oscuro)
+// Theme toggle (claro/oscuro) — mismo sistema que web/landing
 const themeToggle = document.getElementById('themeToggle');
-if (localStorage.getItem('theme') === 'dark') {
-  document.documentElement.classList.add('dark');
-}
+const THEME_STORAGE_KEY = 'drcode_theme';
+
 themeToggle.addEventListener('click', () => {
-  const isDark = document.documentElement.classList.toggle('dark');
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const nextTheme = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
 });
+
+// Menú de navegación en móvil
+const hamburger = document.querySelector('.hamburger');
+const navMenu = document.querySelector('.nav-menu');
+
+if (hamburger && navMenu) {
+  const closeNav = () => {
+    hamburger.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
+    navMenu.classList.remove('active');
+  };
+
+  hamburger.addEventListener('click', () => {
+    const isOpen = hamburger.classList.toggle('active');
+    hamburger.setAttribute('aria-expanded', String(isOpen));
+    navMenu.classList.toggle('active', isOpen);
+  });
+
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', closeNav);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && hamburger.classList.contains('active')) {
+      closeNav();
+      hamburger.focus();
+    }
+  });
+}
 
 // Event Listeners
 closeServiceDrawerBtn.addEventListener('click', closeServiceDrawerFunc);
