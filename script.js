@@ -1,13 +1,34 @@
 // CONFIGURACIÓN: WhatsApp real (solo dígitos, con código de país)
 const WHATSAPP_NUMBER = "593999806465";
 
-// Servicios disponibles: los define data.js
-const [landingService, webService, catalogoService, tarjetaService, , bundleService] = services;
+// Carrito persistente: sobrevive recargas (mismo patrón que el theme)
+const CART_STORAGE_KEY = 'drcode_cart';
+
+function loadCart() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(CART_STORAGE_KEY));
+    if (!Array.isArray(stored)) return [];
+    return stored.filter(item =>
+      item &&
+      typeof item.service === 'string' &&
+      typeof item.basePrice === 'number' &&
+      Array.isArray(item.extras) &&
+      typeof item.subtotal === 'number'
+    );
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveCart() {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  } catch (e) {}
+}
 
 // Variables globales
-let cart = [];
+let cart = loadCart();
 let currentServiceIndex = null;
-let currentBundleThird = 'landing';
 
 // Elementos DOM
 const servicesGrid = document.getElementById('servicesGrid');
@@ -22,7 +43,6 @@ const cancelServiceDrawerBtn = document.getElementById('cancelServiceDrawer');
 const serviceDrawerTitle = document.getElementById('serviceDrawerTitle');
 const serviceDrawerPrice = document.getElementById('serviceDrawerPrice');
 const serviceDrawerDiscount = document.getElementById('serviceDrawerDiscount');
-const bundleChoice = document.getElementById('bundleChoice');
 const serviceDrawerExtras = document.getElementById('serviceDrawerExtras');
 const serviceDrawerSubtotal = document.getElementById('serviceDrawerSubtotal');
 const addToCartBtn = document.getElementById('addToCartBtn');
@@ -43,66 +63,83 @@ function money(value) {
   return `$${Number(value).toFixed(2)}`;
 }
 
-// Precios de referencia del paquete, tomados de los servicios reales
-function getBundleBases() {
-  return {
-    web: webService.originalPrice,
-    catalogo: catalogoService.originalPrice,
-    landing: landingService.originalPrice,
-    tarjeta: tarjetaService.originalPrice
-  };
+// Crear la tarjeta de un servicio — estándar tipo T:
+// título arriba · izquierda descripción y precio · derecha entrega e incluye
+function buildServiceCard(service, index) {
+  const card = document.createElement('div');
+  card.className = `service-card${service.size === 'normal' ? '' : ` service-card--${service.size}`}`;
+  card.dataset.service = index;
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('aria-label', `Cotizar ${service.name}`);
+
+  const bulletsHTML = service.bullets
+    .map(item => `<li>${item}</li>`)
+    .join('');
+
+  card.innerHTML = `
+    <div class="service-badge">${service.badge}</div>
+    <div class="service-title">${service.name}</div>
+    <div class="service-body">
+      <div class="service-info">
+        <p class="service-tagline">${service.tagline}</p>
+        <div class="service-price">
+          <span class="price-old">$${service.originalPrice}</span>
+          <span class="price-now">$${service.basePrice}</span>
+          <span class="price-currency">USD</span>
+        </div>
+      </div>
+      <div class="service-meta">
+        <span class="service-delivery">Entrega: ${service.delivery}</span>
+        <div class="includes-label">Incluye:</div>
+        <ul class="service-includes">${bulletsHTML}</ul>
+      </div>
+    </div>
+    <div class="card-hint">click para cotizar</div>
+  `;
+
+  return card;
 }
 
-// Renderizar servicios
+// Renderizar el catálogo agrupado por secciones
 function renderServices() {
   servicesGrid.innerHTML = '';
 
-  services.forEach((service, index) => {
-    const card = document.createElement('div');
-    card.className = `service-card${service.isBundle ? ' is-bundle' : ''}`;
+  sections.forEach(section => {
+    const sectionEl = document.createElement('section');
+    sectionEl.className = 'catalog-section';
+    sectionEl.id = section.id;
 
-    const isBundle = service.isBundle;
-    const priceValue = isBundle ? calculateBundleBase() : service.basePrice;
-    const originalValue = isBundle ? calculateBundleOriginal() : service.originalPrice;
-
-    const bulletsHTML = service.bullets
-      .map(item => `<li>${item}</li>`)
-      .join('');
-
-    card.innerHTML = `
-      <div class="service-badge">${service.badge}</div>
-      <div class="service-title">${service.name}</div>
-      <p class="service-tagline">${service.tagline}</p>
-      <div class="service-price">
-        <span class="price-old">$${originalValue}</span>
-        <span class="price-now">$${priceValue}</span>
-        <span class="price-currency">USD</span>
-      </div>
-      <ul class="service-includes">${bulletsHTML}</ul>
-      <span class="service-delivery">Entrega: ${service.delivery}</span>
-      <button class="select-service-btn" data-service="${index}">Cotizar este servicio</button>
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+    heading.innerHTML = `
+      <h2 class="section-title">&gt; ${section.title}</h2>
+      <p class="section-desc">${section.description}</p>
     `;
+    sectionEl.appendChild(heading);
 
-    servicesGrid.appendChild(card);
+    const grid = document.createElement('div');
+    grid.className = 'services-grid';
+
+    services.forEach((service, index) => {
+      if (service.section !== section.id) return;
+      grid.appendChild(buildServiceCard(service, index));
+    });
+
+    sectionEl.appendChild(grid);
+    servicesGrid.appendChild(sectionEl);
   });
 
-  // Event listeners para botones de seleccionar
-  document.querySelectorAll('.select-service-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const serviceIndex = parseInt(e.target.dataset.service);
-      openServiceDrawer(serviceIndex);
+  // Toda la tarjeta es clicable (y accesible con Enter/Espacio)
+  document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('click', () => openServiceDrawer(parseInt(card.dataset.service)));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openServiceDrawer(parseInt(card.dataset.service));
+      }
     });
   });
-}
-
-// Calcular base del bundle
-function calculateBundleBase() {
-  return bundleBasePrice(currentBundleThird, getBundleBases());
-}
-
-// Calcular precio de referencia del bundle
-function calculateBundleOriginal() {
-  return bundleOriginalPrice(currentBundleThird, getBundleBases());
 }
 
 // Abrir drawer de servicio
@@ -111,26 +148,13 @@ function openServiceDrawer(serviceIndex) {
   const service = services[serviceIndex];
 
   serviceDrawerTitle.textContent = service.name;
-
-  if (service.isBundle) {
-    serviceDrawerPrice.innerHTML = `
-      <span class="price-old">$${calculateBundleOriginal()}</span>
-      <span class="price-now">$${calculateBundleBase()}</span>
-      <span class="price-currency">USD</span>
-    `;
-    serviceDrawerDiscount.textContent = service.badge;
-    bundleChoice.style.display = 'block';
-    renderBundleExtras();
-  } else {
-    serviceDrawerPrice.innerHTML = `
-      <span class="price-old">$${service.originalPrice}</span>
-      <span class="price-now">$${service.basePrice}</span>
-      <span class="price-currency">USD</span>
-    `;
-    serviceDrawerDiscount.textContent = service.badge;
-    bundleChoice.style.display = 'none';
-    renderServiceExtras(service.extras);
-  }
+  serviceDrawerPrice.innerHTML = `
+    <span class="price-old">$${service.originalPrice}</span>
+    <span class="price-now">$${service.basePrice}</span>
+    <span class="price-currency">USD</span>
+  `;
+  serviceDrawerDiscount.textContent = service.badge;
+  renderServiceExtras(service.extras);
 
   updateServiceSubtotal();
   serviceDrawer.classList.add('show');
@@ -138,7 +162,7 @@ function openServiceDrawer(serviceIndex) {
   document.body.style.overflow = 'hidden';
 }
 
-// Renderizar extras para servicio normal
+// Renderizar extras del servicio
 function renderServiceExtras(extras) {
   serviceDrawerExtras.innerHTML = '';
   extras.forEach((extra, index) => {
@@ -157,62 +181,32 @@ function renderServiceExtras(extras) {
   });
 }
 
-// Renderizar un grupo de extras del bundle
-function renderBundleGroup(title, prefix, extras) {
-  const items = extras.map((extra, index) => `
-    <div class="extra-item">
-      <input type="checkbox" id="extra-${prefix}-${index}" data-price="${extra.price}">
-      <label for="extra-${prefix}-${index}">${extra.name}</label>
-      <span class="extra-price">+$${extra.price}</span>
-    </div>
-  `).join('');
-
-  return `<h3 class="extras-group-title">${title}</h3>${items}`;
-}
-
-// Renderizar extras para bundle
-function renderBundleExtras() {
-  // Los extras de web y catálogo se conservan al cambiar el tercer componente
-  const checkedIds = new Set(
-    [...serviceDrawerExtras.querySelectorAll('input:checked')]
-      .map(cb => cb.id)
-      .filter(id => !id.startsWith('extra-third-'))
-  );
-
-  const bundle = bundleService;
-  const thirdService = currentBundleThird === 'landing'
-    ? bundle.thirdOptions.landing
-    : bundle.thirdOptions.tarjeta;
-
-  serviceDrawerExtras.innerHTML =
-    renderBundleGroup('Web corporativa', 'web', bundle.includes[0].extras) +
-    renderBundleGroup('Catálogo de compras', 'cat', bundle.includes[1].extras) +
-    renderBundleGroup(thirdService.name, 'third', thirdService.extras);
-
-  // Event listeners para checkboxes (restaurando la selección previa)
-  serviceDrawerExtras.querySelectorAll('input').forEach(cb => {
-    if (checkedIds.has(cb.id)) {
-      cb.checked = true;
-    }
-    cb.addEventListener('change', updateServiceSubtotal);
-  });
-}
-
-// Actualizar subtotal del servicio en tiempo real
+// Actualizar subtotal del servicio en tiempo real (con promo: el extra más caro sale gratis)
 function updateServiceSubtotal() {
   const service = services[currentServiceIndex];
-  let subtotal = 0;
 
-  if (service.isBundle) {
-    subtotal = parseFloat(bundleBasePrice(currentBundleThird, getBundleBases()));
-  } else {
-    subtotal = service.basePrice;
-  }
-
-  // Sumar extras seleccionados
-  serviceDrawerExtras.querySelectorAll('input:checked').forEach(cb => {
-    subtotal += parseFloat(cb.dataset.price);
+  // Restaurar el precio de cada extra antes de recalcular
+  serviceDrawerExtras.querySelectorAll('.extra-item').forEach(item => {
+    item.classList.remove('extra-free');
+    item.querySelector('.extra-price').textContent = `+$${item.querySelector('input').dataset.price}`;
   });
+
+  const checked = [...serviceDrawerExtras.querySelectorAll('input:checked')];
+  const selectedExtras = checked.map(cb => ({
+    name: cb.parentElement.querySelector('label').textContent,
+    price: parseFloat(cb.dataset.price)
+  }));
+
+  const discount = freeExtraDiscount(selectedExtras);
+  let subtotal = service.basePrice + selectedExtras.reduce((sum, extra) => sum + extra.price, 0) - discount;
+
+  // Marcar el extra que sale gratis (el de mayor costo)
+  if (discount > 0) {
+    const freeCb = checked.find(cb => parseFloat(cb.dataset.price) === discount);
+    const freeItem = freeCb.closest('.extra-item');
+    freeItem.classList.add('extra-free');
+    freeItem.querySelector('.extra-price').textContent = 'GRATIS';
+  }
 
   serviceDrawerSubtotal.textContent = money(subtotal);
 }
@@ -228,37 +222,33 @@ function closeServiceDrawerFunc() {
 function addToCart() {
   const service = services[currentServiceIndex];
   const selectedExtras = [];
-  let subtotal = 0;
-
-  const basePrice = service.isBundle
-    ? parseFloat(bundleBasePrice(currentBundleThird, getBundleBases()))
-    : service.basePrice;
-
-  subtotal = basePrice;
 
   serviceDrawerExtras.querySelectorAll('input:checked').forEach(cb => {
-    const price = parseFloat(cb.dataset.price);
-    subtotal += price;
     selectedExtras.push({
       name: cb.parentElement.querySelector('label').textContent,
-      price: price
+      price: parseFloat(cb.dataset.price)
     });
   });
 
-  const item = {
+  // Promo: el extra de mayor costo sale gratis
+  const freePrice = freeExtraDiscount(selectedExtras);
+  const freeExtra = freePrice > 0
+    ? selectedExtras.find(extra => extra.price === freePrice)
+    : null;
+
+  const subtotal = service.basePrice
+    + selectedExtras.reduce((sum, extra) => sum + extra.price, 0)
+    - freePrice;
+
+  cart.push({
     service: service.name,
-    basePrice: basePrice,
+    basePrice: service.basePrice,
     extras: selectedExtras,
+    freeExtra: freeExtra ? { name: freeExtra.name, price: freeExtra.price } : null,
     subtotal: subtotal
-  };
+  });
 
-  if (service.isBundle) {
-    item.isBundle = true;
-    item.bundleThird = currentBundleThird;
-  }
-
-  cart.push(item);
-
+  saveCart();
   updateCartBadge();
   showToast();
   closeServiceDrawerFunc();
@@ -299,6 +289,8 @@ function closeCartDrawerFunc() {
 
 // Actualizar contenido del carrito
 function updateCartDrawer() {
+  whatsappBtn.disabled = cart.length === 0;
+
   if (cart.length === 0) {
     cartItems.innerHTML = '<p class="empty-cart">No hay servicios agregados aún</p>';
     cartTotalEl.textContent = 'Total: $0.00';
@@ -312,6 +304,10 @@ function updateCartDrawer() {
       ? `<div class="cart-extras">Extras: ${item.extras.map(e => `${e.name} (+$${e.price})`).join(', ')}</div>`
       : '';
 
+    const freeExtraHTML = item.freeExtra
+      ? `<div class="cart-free-extra">Extra gratis: ${item.freeExtra.name} (-$${item.freeExtra.price})</div>`
+      : '';
+
     itemsHTML += `
       <div class="cart-item">
         <div class="cart-item-header">
@@ -323,6 +319,7 @@ function updateCartDrawer() {
         </div>
         <div>Base: ${money(item.basePrice)}</div>
         ${extrasHTML}
+        ${freeExtraHTML}
       </div>
     `;
   });
@@ -335,6 +332,7 @@ function updateCartDrawer() {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.target.dataset.index);
       cart.splice(index, 1);
+      saveCart();
       updateCartBadge();
       updateCartDrawer();
     });
@@ -352,35 +350,6 @@ themeToggle.addEventListener('click', () => {
   localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
 });
 
-// Menú de navegación en móvil
-const hamburger = document.querySelector('.hamburger');
-const navMenu = document.querySelector('.nav-menu');
-
-if (hamburger && navMenu) {
-  const closeNav = () => {
-    hamburger.classList.remove('active');
-    hamburger.setAttribute('aria-expanded', 'false');
-    navMenu.classList.remove('active');
-  };
-
-  hamburger.addEventListener('click', () => {
-    const isOpen = hamburger.classList.toggle('active');
-    hamburger.setAttribute('aria-expanded', String(isOpen));
-    navMenu.classList.toggle('active', isOpen);
-  });
-
-  navMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', closeNav);
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && hamburger.classList.contains('active')) {
-      closeNav();
-      hamburger.focus();
-    }
-  });
-}
-
 // Event Listeners
 closeServiceDrawerBtn.addEventListener('click', closeServiceDrawerFunc);
 cancelServiceDrawerBtn.addEventListener('click', closeServiceDrawerFunc);
@@ -392,27 +361,115 @@ cartIcon.addEventListener('click', openCartDrawer);
 closeCartDrawerBtn.addEventListener('click', closeCartDrawerFunc);
 cartDrawerOverlay.addEventListener('click', closeCartDrawerFunc);
 
-// Cambio del tercer componente del paquete (listener único)
-document.querySelectorAll('input[name="bundleThird"]').forEach(radio => {
-  radio.addEventListener('change', (e) => {
-    currentBundleThird = e.target.value;
-    serviceDrawerPrice.innerHTML = `
-      <span class="price-old">$${calculateBundleOriginal()}</span>
-      <span class="price-now">$${calculateBundleBase()}</span>
-      <span class="price-currency">USD</span>
-    `;
-    serviceDrawerDiscount.textContent = bundleService.badge;
-    renderBundleExtras();
-    updateServiceSubtotal();
-  });
-});
-
 whatsappBtn.addEventListener('click', () => {
   const url = buildWhatsAppUrl(cart, WHATSAPP_NUMBER);
   if (url) {
     window.open(url, '_blank');
+  } else {
+    // Carrito vacío: aviso en lugar de abrir un wa.me sin mensaje
+    toast.textContent = 'Agrega un servicio primero';
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.textContent = 'Servicio agregado a cotización';
+    }, 3000);
   }
 });
 
-// Inicializar
+// Contact modal (correo del footer)
+const mailLink = document.getElementById('mailLink');
+const contactModal = document.getElementById('contactModal');
+const contactOverlay = document.getElementById('contactOverlay');
+const closeContactModalBtn = document.getElementById('closeContactModal');
+const contactForm = document.getElementById('contactForm');
+const contactServiceSelect = document.getElementById('contactService');
+const contactSubmitBtn = document.getElementById('contactSubmitBtn');
+const contactSuccess = document.getElementById('contactSuccess');
+const contactDoneBtn = document.getElementById('contactDoneBtn');
+
+// Poblar el select de servicios desde la fuente única de datos (data.js)
+function renderContactServiceOptions() {
+  const placeholder = '<option value="" disabled selected>Selecciona un servicio</option>';
+  const groups = sections.map(section => {
+    const opts = services
+      .filter(service => service.section === section.id)
+      .map(service => `<option value="${service.name}">${service.name}</option>`)
+      .join('');
+    return `<optgroup label="${section.title}">${opts}</optgroup>`;
+  }).join('');
+
+  contactServiceSelect.innerHTML = placeholder + groups
+    + '<option value="Otro">Otro / aún no lo tengo claro</option>';
+}
+
+function openContactModal() {
+  contactForm.hidden = false;
+  contactSuccess.hidden = true;
+  contactSubmitBtn.disabled = false;
+  contactSubmitBtn.textContent = 'Enviar mensaje';
+  contactModal.classList.add('show');
+  contactOverlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  const firstInput = contactForm.querySelector('input:not([type=hidden])');
+  if (firstInput) firstInput.focus();
+}
+
+function closeContactModalFunc() {
+  contactModal.classList.remove('show');
+  contactOverlay.classList.remove('show');
+  document.body.style.overflow = 'auto';
+}
+
+// Envío por FormSubmit (AJAX): el mensaje llega a jordy.mh_1994@hotmail.com
+contactForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!contactForm.checkValidity()) {
+    contactForm.reportValidity();
+    return;
+  }
+  // Honeypot: si el campo trampa tiene contenido, es un bot
+  if (contactForm.querySelector('[name="_honey"]').value) return;
+
+  contactSubmitBtn.disabled = true;
+  contactSubmitBtn.textContent = 'Enviando...';
+
+  try {
+    const response = await fetch(contactForm.action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(Object.fromEntries(new FormData(contactForm)))
+    });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+
+    contactForm.reset();
+    contactForm.hidden = true;
+    contactSuccess.hidden = false;
+  } catch (err) {
+    toast.textContent = 'No se pudo enviar. Escríbenos a jordy.mh_1994@hotmail.com';
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.textContent = 'Servicio agregado a cotización';
+    }, 4000);
+  }
+
+  contactSubmitBtn.disabled = false;
+  contactSubmitBtn.textContent = 'Enviar mensaje';
+});
+
+mailLink.addEventListener('click', openContactModal);
+closeContactModalBtn.addEventListener('click', closeContactModalFunc);
+contactOverlay.addEventListener('click', closeContactModalFunc);
+contactDoneBtn.addEventListener('click', closeContactModalFunc);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && contactModal.classList.contains('show')) {
+    closeContactModalFunc();
+  }
+});
+
+// Inicializar: reflejar el carrito restaurado de localStorage
+updateCartBadge();
 renderServices();
+renderContactServiceOptions();

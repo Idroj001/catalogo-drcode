@@ -1,40 +1,47 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { bundleBasePrice, bundleOriginalPrice, cartTotal, buildWhatsAppMessage, buildWhatsAppUrl } = require('../quote.js');
-const { services } = require('../data.js');
+const { freeExtraDiscount, cartTotal, buildWhatsAppMessage, buildWhatsAppUrl } = require('../quote.js');
 
-const bases = {
-  web: services[1].originalPrice,
-  catalogo: services[2].originalPrice,
-  landing: services[0].originalPrice,
-  tarjeta: services[3].originalPrice,
-};
-
-test('bundle original price sums the three reference prices', () => {
-  assert.strictEqual(bundleOriginalPrice('landing', bases), 260);
-  assert.strictEqual(bundleOriginalPrice('tarjeta', bases), 220);
+test('free extra discount picks the most expensive selected extra', () => {
+  assert.strictEqual(freeExtraDiscount([]), 0);
+  assert.strictEqual(freeExtraDiscount(undefined), 0);
+  assert.strictEqual(freeExtraDiscount([{ name: 'A', price: 5 }]), 5);
+  assert.strictEqual(
+    freeExtraDiscount([
+      { name: 'A', price: 5 },
+      { name: 'B', price: 12 },
+      { name: 'C', price: 8 },
+    ]),
+    12
+  );
 });
 
-test('bundle base price applies 75% off and the $15 combo bonus', () => {
-  // (100 web + 80 catalogo + 80 landing) * 0.25 - 15
-  assert.strictEqual(bundleBasePrice('landing', bases), '50');
+test('whatsapp message includes the free extra line and the discounted subtotal', () => {
+  const msg = buildWhatsAppMessage([
+    {
+      service: 'Finanzas personales',
+      basePrice: 30,
+      extras: [
+        { name: 'Login de usuario', price: 8 },
+        { name: 'Exportar a CSV', price: 6 },
+      ],
+      freeExtra: { name: 'Login de usuario', price: 8 },
+      subtotal: 36,
+    },
+  ]);
+
+  assert.ok(msg.includes('- Login de usuario (+$8)\n'));
+  assert.ok(msg.includes('Extra gratis (el más caro): Login de usuario (-$8)\n'));
+  assert.ok(msg.includes('Subtotal: $36.00 USD'));
+  assert.ok(msg.includes('TOTAL: $36.00 USD'));
 });
 
-test('bundle base price uses the digital card reference when selected', () => {
-  // (100 + 80 + 40) * 0.25 - 15
-  assert.strictEqual(bundleBasePrice('tarjeta', bases), '40');
-});
+test('whatsapp message omits the free extra line when no extra was chosen', () => {
+  const msg = buildWhatsAppMessage([
+    { service: 'Landing page simple', basePrice: 20, extras: [], freeExtra: null, subtotal: 20 },
+  ]);
 
-test('unknown third component falls back to landing price', () => {
-  assert.strictEqual(bundleBasePrice(undefined, bases), '50');
-});
-
-test('the bundle costs less than its parts bought separately', () => {
-  const separateLanding = services[1].basePrice + services[2].basePrice + services[0].basePrice;
-  const separateTarjeta = services[1].basePrice + services[2].basePrice + services[3].basePrice;
-
-  assert.ok(Number(bundleBasePrice('landing', bases)) < separateLanding);
-  assert.ok(Number(bundleBasePrice('tarjeta', bases)) < separateTarjeta);
+  assert.ok(!msg.includes('Extra gratis'));
 });
 
 test('cart total adds every subtotal and handles decimals', () => {
@@ -84,21 +91,6 @@ test('whatsapp message total equals the cart total', () => {
   ]);
 
   assert.ok(msg.includes('TOTAL: $30.00 USD'));
-});
-
-test('whatsapp message marks bundle items with their third component', () => {
-  const msg = buildWhatsAppMessage([
-    {
-      service: 'Paquete Integral Dr.Code',
-      basePrice: 40,
-      extras: [],
-      subtotal: 40,
-      isBundle: true,
-      bundleThird: 'tarjeta',
-    },
-  ]);
-
-  assert.ok(msg.includes('(Incluye: Web Corporativa, Catálogo de Compras, Tarjeta Digital)'));
 });
 
 test('whatsapp message returns empty string for an empty cart', () => {

@@ -13,17 +13,18 @@
 - Jerarquía por escala (VT323 solo tiene un peso); cuerpo a 62–72ch como máximo en bloques de texto.
 
 ## Layout
-- `main` max 1400px, grid fijo 3/2/1 columnas (1024 / 640 px, además 768 px fuerza 1 columna).
-- Tarjetas: `flex-direction: column`, `min-height: 360px`, botón con `margin-top: auto`.
-- El paquete (`.is-bundle`) se distingue con borde `--border-strong` y superficie `--surface-strong`.
+- `main` max 1400px. El catálogo se agrupa en 3 secciones (`estaticos` → `dinamicos` → `bots`), cada una con heading (`> título` + descripción) y su propia grilla.
+- `.services-grid`: 6 columnas; tarjetas `normal` = span 2, `wide` = span 3, `full` = span 6 (dashboard). A 1024px normales/anchas van a span 3 (dos por fila); a 768px todo a 1 columna. Anclas de sección con `scroll-margin-top` por el header fijo.
+- Tarjetas: `flex-direction: column`, `min-height: 360px` (300px las anchas, 260px la completa), botón con `margin-top: auto`. Las anchas/completas pintan los bullets en 2 columnas para aprovechar el espacio.
+- Navegación de secciones bajo el intro: chips `# título` con anclas suaves (`scroll-behavior: smooth`).
 - Header: logo a la izquierda con el markup de web (spans), navegación de la web, toggle de tema y carrito a la derecha; menú hamburguesa en móvil.
 - Footer minimal fuera de `main`, mismo ancho y padding.
 
 ## Components
-- `.service-card`: badge, título, tagline, precio anterior tachado + actual + USD, 3 bullets, entrega, botón.
-- `.drawer`: panel lateral 450px (100% en móvil), superficie sólida, overlay con blur, `body.overflow` bloqueado al abrir.
-- `.extra-item`: checkbox + label + precio a la derecha. El nombre del extra nunca incluye el precio.
-- `.site-footer`: logo con el markup de web, enlace de regreso a la web principal, aviso USD/alcance.
+- `.service-card` (estándar tipo T, toda clicable con `role="button"`): badge, título con borde inferior, columna izquierda (tagline + precio anterior tachado + actual + USD), columna derecha con borde (`> Entrega:` + `> Incluye:` + bullets), hint `> click para cotizar_` parpadeante abajo. Sin botón CTA.
+- `.drawer`: panel lateral 450px (100% en móvil), superficie sólida, overlay con blur, `body.overflow` bloqueado al abrir, aviso de la promo de 1 extra gratis.
+- `.extra-item`: checkbox + label + precio a la derecha. El nombre del extra nunca incluye el precio; el más caro seleccionado se marca `GRATIS`.
+- `.site-footer`: logo con el markup de web, enlace de regreso a la web principal; accesos a WhatsApp y correo (sin agendar cita). El botón de correo abre `.contact-modal` (nombre, apellido, teléfono, correo, servicio de interés, mensaje) que envía por FormSubmit AJAX a jordy.mh_1994@hotmail.com; panel de éxito con caret parpadeante y cierre por `×`/overlay/Escape/"Listo".
 - Logo: spans con VT323 (solo el logo); llaves en `--matrix-green` con glow `text-shadow` y letras en `--green-text`.
 
 ## Motion

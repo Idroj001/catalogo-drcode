@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dr.Code - Cotizador de Servicios</title>
+  <meta name="description" content="Cotiza tu página web, web con base de datos o chatbot de WhatsApp con Dr.Code. Precios de lanzamiento 75% OFF, entrega en días y pedido directo por WhatsApp.">
+  <link rel="canonical" href="https://idroj001.github.io/catalogo-drcode/">
+  <meta property="og:title" content="Dr.Code — Cotizador de Servicios">
+  <meta property="og:description" content="Webs estáticas y dinámicas con base de datos, chatbots y automatizaciones con 75% OFF de lanzamiento. Cotiza y pide directo por WhatsApp.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://idroj001.github.io/catalogo-drcode/">
+  <meta property="og:image" content="https://idroj001.github.io/catalogo-drcode/assets/og-image.png">
+  <meta property="og:locale" content="es_EC">
+  <meta name="twitter:card" content="summary">
   <meta name="color-scheme" content="light dark">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,18 +48,10 @@
         <span class="logo-braces">{</span><span class="logo-text">Dr</span><span class="logo-dot">.</span><span class="logo-text">Code</span><span class="logo-braces">}</span>
       </a>
 
-      <nav id="nav-menu" aria-label="Navegación principal">
-        <ul class="nav-menu">
-          <li><a href="https://idroj001.github.io/web-drcode/index.html" class="nav-link">Inicio</a></li>
-          <li><a href="https://idroj001.github.io/web-drcode/servicios.html" class="nav-link">Servicios</a></li>
-          <li><a href="https://idroj001.github.io/web-drcode/skills.html" class="nav-link">Skills</a></li>
-          <li><a href="https://idroj001.github.io/DrCode-landing/" class="nav-link">Landing</a></li>
-          <li><a href="https://idroj001.github.io/web-drcode/contacto.html" class="nav-link">Contacto</a></li>
-          <li><a href="https://idroj001.github.io/web-drcode/calendario.html" class="nav-link nav-cta">Agendamiento</a></li>
-        </ul>
-      </nav>
-
       <div class="header-actions">
+        <a href="https://idroj001.github.io/web-drcode/" class="web-link" aria-label="Ir al sitio principal de Dr.Code" title="Web">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.08 16zm2.95-8H5.08a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>
+        </a>
         <div class="header-controls">
           <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">
             <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -75,11 +76,6 @@
             <div class="cart-badge" id="cartBadge">0</div>
           </div>
         </div>
-        <button class="hamburger" aria-label="Menú de navegación" aria-expanded="false" aria-controls="nav-menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
       </div>
     </div>
   </header>
@@ -87,7 +83,14 @@
   <!-- Main Content -->
   <main>
     <p class="grid-intro">$ cotizador_dr.code · precios de lanzamiento · 75% OFF</p>
-    <div class="services-grid" id="servicesGrid"></div>
+
+    <nav class="section-nav" aria-label="Secciones del catálogo">
+      <a href="#estaticos" class="section-nav-link">1 · Webs estáticas</a>
+      <a href="#dinamicos" class="section-nav-link">2 · Webs dinámicas</a>
+      <a href="#bots" class="section-nav-link">3 · Chatbot y automatizaciones</a>
+    </nav>
+
+    <div id="servicesGrid"></div>
   </main>
 
   <footer class="site-footer">
@@ -95,17 +98,14 @@
       <a class="footer-logo" href="https://idroj001.github.io/web-drcode/" aria-label="Volver al sitio principal de Dr.Code" title="Volver al sitio principal">
         <span class="logo-braces">{</span><span class="logo-text">Dr</span><span class="logo-dot">.</span><span class="logo-text">Code</span><span class="logo-braces">}</span>
       </a>
-      <p class="footer-copy">Todos los derechos reservados © 2026 {Dr.Code}</p>
+      <p class="footer-copy">© 2026 {Dr.Code} · Precios en USD · El total se confirma por WhatsApp</p>
       <div class="social-links">
         <a href="https://wa.me/593999806465" target="_blank" rel="noopener" class="social-link" aria-label="Escribir por WhatsApp" title="WhatsApp">
           <svg viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
         </a>
-        <a href="mailto:jordy.mh_1994@hotmail.com" class="social-link" aria-label="Enviar un correo" title="Correo">
+        <button type="button" class="social-link" id="mailLink" aria-label="Escríbenos por correo" title="Correo">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4.2-8 5-8-5V6l8 5 8-5v2.2z"/></svg>
-        </a>
-        <a href="https://idroj001.github.io/web-drcode/calendario.html" class="social-link" aria-label="Agendar una cita" title="Agendar cita">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1zM5 9v9h14V9H5z"/></svg>
-        </a>
+        </button>
       </div>
     </div>
   </footer>
@@ -123,18 +123,8 @@
         <span class="discount-note" id="serviceDrawerDiscount"></span>
       </div>
 
-      <!-- Bundle Choice (Only for Bundle) -->
-      <div class="bundle-choice" id="bundleChoice" style="display: none;">
-        <h3>Elige el tercer componente del paquete:</h3>
-        <label class="radio-label">
-          <input type="radio" name="bundleThird" value="landing" checked>
-          Landing page simple (incluida)
-        </label>
-        <label class="radio-label">
-          <input type="radio" name="bundleThird" value="tarjeta">
-          Tarjeta digital profesional (incluida)
-        </label>
-      </div>
+      <!-- Promo: 1 extra gratis -->
+      <p class="promo-note">PROMO: 1 extra gratis — si eliges varios, el de mayor costo no se cobra</p>
 
       <!-- Extras List -->
       <div class="extras-list" id="serviceDrawerExtras"></div>
@@ -170,6 +160,62 @@
         </svg>
         Continuar con WhatsApp
       </button>
+    </div>
+  </div>
+
+  <!-- Contact Modal (correo del footer) -->
+  <div class="drawer-overlay" id="contactOverlay"></div>
+  <div class="contact-modal" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="drawer-header">
+      <h2 class="drawer-title" id="contactTitle">Escríbenos por correo</h2>
+      <button class="drawer-close" id="closeContactModal" aria-label="Cerrar">×</button>
+    </div>
+
+    <form class="contact-form" id="contactForm" action="https://formsubmit.co/ajax/jordy.mh_1994@hotmail.com" method="POST">
+      <!-- Config FormSubmit -->
+      <input type="hidden" name="_subject" value="Nueva consulta desde el cotizador — {Dr.Code}">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="contactName">Nombre</label>
+          <input type="text" id="contactName" name="nombre" required autocomplete="given-name" placeholder="Tu nombre">
+        </div>
+        <div class="form-field">
+          <label for="contactLastname">Apellido</label>
+          <input type="text" id="contactLastname" name="apellido" required autocomplete="family-name" placeholder="Tu apellido">
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="contactPhone">Teléfono</label>
+        <input type="tel" id="contactPhone" name="telefono" required autocomplete="tel" pattern="[+\d][\d\s]{6,}" placeholder="+593 99 999 9999">
+      </div>
+
+      <div class="form-field">
+        <label for="contactEmail">Correo</label>
+        <input type="email" id="contactEmail" name="email" required autocomplete="email" placeholder="tucorreo@ejemplo.com">
+      </div>
+
+      <div class="form-field">
+        <label for="contactService">Servicio de interés</label>
+        <select id="contactService" name="servicio_de_interes" required></select>
+      </div>
+
+      <div class="form-field">
+        <label for="contactMessage">Mensaje</label>
+        <textarea id="contactMessage" name="mensaje" required placeholder="Cuéntanos qué necesitas..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary" id="contactSubmitBtn">Enviar mensaje</button>
+    </form>
+
+    <div class="contact-success" id="contactSuccess" hidden>
+      <p class="contact-success-line">mensaje enviado</p>
+      <p class="contact-success-text">Gracias por escribirnos. Te respondemos pronto a tu correo.</p>
+      <button type="button" class="btn-primary" id="contactDoneBtn">Listo</button>
     </div>
   </div>
 

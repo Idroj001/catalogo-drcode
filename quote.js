@@ -1,20 +1,10 @@
 // Lógica pura de cotización — sin DOM, testeable con node --test
 // Cargada en el navegador junto a data.js y script.js, y en Node por los tests.
 
-// Precios de lanzamiento: 75% de descuento sobre el precio de referencia
-const LAUNCH_OFF = 0.75;
-const BUNDLE_BONUS = 15;
-
-// Precio de referencia del bundle: suma de los tres componentes sin descuento
-function bundleOriginalPrice(thirdChoice, bases) {
-  const thirdBase = thirdChoice === 'tarjeta' ? bases.tarjeta : bases.landing;
-  return bases.web + bases.catalogo + thirdBase;
-}
-
-// Base del bundle: 25% de la suma de referencias, menos $15 por el combo
-function bundleBasePrice(thirdChoice, bases) {
-  const original = bundleOriginalPrice(thirdChoice, bases);
-  return String(Math.round(original * (1 - LAUNCH_OFF)) - BUNDLE_BONUS);
+// Promo: 1 extra gratis. Si el cliente elige varios, el de mayor costo no se cobra.
+function freeExtraDiscount(extras) {
+  if (!extras || extras.length === 0) return 0;
+  return Math.max(...extras.map(extra => extra.price));
 }
 
 // Total del carrito: suma de subtotales ya calculados
@@ -32,15 +22,15 @@ function buildWhatsAppMessage(cart) {
     message += `${index + 1}. ${item.service}\n`;
     message += `   Base: $${item.basePrice.toFixed(2)} USD\n`;
 
-    if (item.isBundle) {
-      message += `   (Incluye: Web Corporativa, Catálogo de Compras, ${item.bundleThird === 'landing' ? 'Landing Page' : 'Tarjeta Digital'})\n`;
-    }
-
     if (item.extras.length > 0) {
       message += `   Extras:\n`;
       item.extras.forEach(extra => {
         message += `   - ${extra.name} (+$${extra.price})\n`;
       });
+    }
+
+    if (item.freeExtra) {
+      message += `   Extra gratis (el más caro): ${item.freeExtra.name} (-$${item.freeExtra.price})\n`;
     }
 
     message += `   Subtotal: $${item.subtotal.toFixed(2)} USD\n\n`;
@@ -60,5 +50,5 @@ function buildWhatsAppUrl(cart, number) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { bundleBasePrice, bundleOriginalPrice, cartTotal, buildWhatsAppMessage, buildWhatsAppUrl };
+  module.exports = { freeExtraDiscount, cartTotal, buildWhatsAppMessage, buildWhatsAppUrl };
 }
